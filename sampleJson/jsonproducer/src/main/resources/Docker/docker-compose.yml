@@ -1,0 +1,42 @@
+version: "3.7"
+
+services:
+
+  zookeeperb:
+    image: wurstmeister/zookeeper
+    container_name: zookeeperb
+    restart: always
+    ports:
+      - 2181:2181
+
+  bankkafka:
+    image: wurstmeister/kafka
+    container_name: bankkafka
+    restart: always
+    ports:
+      - 9092:9092
+    depends_on:
+      - zookeeperb
+    links:
+      - zookeeperb:zookeeperb
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: bankkafka
+      KAFKA_ZOOKEEPER_CONNECT: zookeeperb:2181
+
+
+  kafkaspring:
+    image: kuberneteskafka
+    container_name: kafkaspring
+    depends_on:
+      - bankkafka
+  
+    restart: always
+    ports:
+      - 8099:8099
+    depends_on:
+      - bankkafka
+
+    links:
+      - bankkafka:bankkafka
+
+  
